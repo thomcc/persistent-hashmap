@@ -199,9 +199,6 @@ BitmapIndexedNode.prototype = {
   assoc: function(shift, hash, key, val, addedLeaf) {
     var bit = bitpos(hash, shift);
     var idx = this.index(bit);
-    if (key == "11") {
-      console.log("11~");
-    }
     if ((this.bitmap & bit) !== 0) {
       var keyOrNull = this.array[2*idx];
       var valOrNode = this.array[2*idx+1];
@@ -354,7 +351,7 @@ PersistentHashMap.prototype = {
 
 PersistentHashMap.EMPTY = new PersistentHashMap(0, null, false, null);
 
-
+/*
 var p = PersistentHashMap.EMPTY.assoc("foo", 30);
 
 
@@ -365,12 +362,63 @@ for (var i = 0; i < 1000; ++i) {
   console.log(b.valAt(n));
   p = b;
 }
+*/
 
 
 
 
 
 
+function time(f) {
+  var start = new Date();
+  f();
+  console.log((new Date())-start);
+}
 
+//console.log("Instantiation: 1000000 iterations");
+time(function() {
+  for (var i = 0; i < 1000000; ++i) {
+    new PersistentHashMap(0, null, false, null);    
+  }
+});
+
+var m = PersistentHashMap.EMPTY;
+time(function() {
+  for (var i = 0; i < 1000000; ++i) {
+    m = m.assoc(""+i, i);
+  }
+  for (i = 0; i < 1000000; ++i) {
+    m.valAt("999999");
+  }
+});
+
+time(function() {
+  for(var i = 0; i < 1000000; i++) {
+    m.valAt("999999");
+  }
+});
+
+var o = {};
+
+time(function() {
+  for (var i = 0; i < 1000000; ++i) {
+    o[""+i] = i;
+  }
+});
+
+time(function() {
+  for (var i = 0; i < 1000000; ++i) {
+    o["999999"];
+  }
+});
+/*
+for (var i = 0; i < 1000; ++i) {
+  var n = i.toString();
+  var b = p.assoc(n, i);
+  console.log(b);
+  console.log(b.valAt(n));
+  p = b;
+}
+*/
 
 
