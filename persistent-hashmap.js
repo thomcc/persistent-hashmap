@@ -93,7 +93,7 @@ HashCollisionNode.prototype = {
   find: function(shift, hash, key, notFound) {
     var idx = this.findIndex(key);
     if (idx < 0) return notFound;
-    if (equiv(key, this.array[idx])) return this.array[idx];
+    if (equiv(key, this.array[idx])) return this.array[idx+1];
     return notFound;
   },
   findIndex: function(key) {
