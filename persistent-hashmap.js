@@ -1,6 +1,7 @@
-
-// taken from goog.string.hashCode
+// taken from goog.string.hashCode, and changed to actually test the 
+// hashcollisionnode
 function ghash(str) {
+  if (str == "foo" || str == "bar") return 1234;
   var result = 0;
   for (var i = 0; i < str.length; ++i) {
     result = 31*result+str.charCodeAt(i);
@@ -26,7 +27,7 @@ function cloneAndSet(array, i, a) {
   clone[i] = a;
   return clone;
 }
-
+// unnecessary
 function arraycopy(src, srcpos, dest, destpos, length) {
   for (var i = 0; i < length; ++i) {
     dest[i+destpos] = src[i+srcpos];
@@ -57,7 +58,7 @@ function createNode(shift, key1, val1, key2hash, key2, val2) {
                                   .assoc(shift, key2hash, key2, val2, box);
   }
 }
-// much less efficient than Integer.bitCount
+// much less efficient than Integer.bitCount, but no choice?
 function bitCount(i) {
   i = i - ((i >>> 1) & 0x55555555);
   i = (i & 0x33333333) + ((i >>> 2) & 0x33333333);
@@ -351,74 +352,61 @@ PersistentHashMap.prototype = {
 
 PersistentHashMap.EMPTY = new PersistentHashMap(0, null, false, null);
 
-/*
-var p = PersistentHashMap.EMPTY.assoc("foo", 30);
-
-
-for (var i = 0; i < 1000; ++i) {
-  var n = i.toString();
-  var b = p.assoc(n, i);
-  console.log(b);
-  console.log(b.valAt(n));
-  p = b;
-}
-*/
-
-
-
-
-
-
 function time(f) {
   var start = new Date();
   f();
   console.log((new Date())-start);
 }
-
-//console.log("Instantiation: 1000000 iterations");
+console.log("instantiation of persistent");
 time(function() {
   for (var i = 0; i < 1000000; ++i) {
     new PersistentHashMap(0, null, false, null);    
   }
 });
-
+console.log("assoc and valAt on persistent");
 var m = PersistentHashMap.EMPTY;
 time(function() {
   for (var i = 0; i < 1000000; ++i) {
     m = m.assoc(""+i, i);
   }
   for (i = 0; i < 1000000; ++i) {
-    m.valAt("999999");
+    m.valAt(""+i);
   }
 });
-
+console.log("valAt on persistent");
 time(function() {
-  for(var i = 0; i < 1000000; i++) {
-    m.valAt("999999");
+  for (var i = 0; i < 1000000; ++i) {
+    m.valAt(""+i);
   }
 });
-
+console.log("without on persistent");
+var m2 = m;
+time(function() {
+  for (var i = 0; i < 1000000; ++i) {
+    m2 = m2.without(""+i);
+  }
+});
+console.log("assoc on persistent");
+var m3 = m2;
+time(function() {
+  for (var i = 0; i < 1000000; ++i) {
+    m3 = m3.assoc(""+i);
+  }
+});
 var o = {};
-
+console.log("set on native object");
 time(function() {
   for (var i = 0; i < 1000000; ++i) {
     o[""+i] = i;
   }
 });
-
+console.log("get on native object");
 time(function() {
   for (var i = 0; i < 1000000; ++i) {
-    o["999999"];
+    o[""+i];
   }
 });
-/*
-for (var i = 0; i < 1000; ++i) {
-  var n = i.toString();
-  var b = p.assoc(n, i);
-  console.log(b);
-  console.log(b.valAt(n));
-  p = b;
-}
-*/
-
+console.log("test of hash collision node:");
+var m4 = m3.assoc("foo", "frob").assoc("bar", "baz");
+console.log(m4.valAt("foo"), m4.valAt("bar"), m4.without("foo").valAt("bar"), m4.without("bar").valAt("foo"));
 
